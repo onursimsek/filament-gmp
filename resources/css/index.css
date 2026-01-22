@@ -1,1 +1,13 @@
-@import '../../vendor/filament/filament/resources/css/theme.css';
+@import "tailwindcss";
+
+.filament-gmp-component {
+    @apply grid grid-cols-1 gap-4;
+
+    .map-wrapper {
+        @apply rounded-lg overflow-clip;
+    }
+
+    .location-field {
+        @apply grid grid-cols-2 md:grid-cols-1 gap-4;
+    }
+}
