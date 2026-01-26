@@ -10,49 +10,49 @@ class FilamentGmp extends Field
 {
     protected string $view = 'filament-gmp::filament-gmp';
 
-    private array $options = [
-        //'zoom' => 12,
-        'lat' => 37.9106,
-        'lng' => 40.2365,
-    ];
+    protected array $center = [];
 
-    protected \Closure|float|null $lat = null;
+    protected float $lat;
 
-    protected \Closure|float|null $lng = null;
+    protected float $lng;
 
-    protected \Closure|int $zoom = 14;
+    protected int $zoom;
 
-    private \Closure|int $height = 300;
+    private \Closure|int $height;
 
     private \Closure|bool $draggable = true;
 
     private \Closure|bool $searchable = true;
 
-    public function lat(\Closure|float $lat): static
+    private array $config;
+
+    public function center(float $lat, float $lng): static
+    {
+        $this->center = ['lat' => $lat, 'lng' => $lng];
+
+        return $this;
+    }
+
+    public function getCenter(): array
+    {
+        return $this->evaluate($this->center);
+    }
+
+    private function lat(float $lat): static
     {
         $this->lat = $lat;
 
         return $this;
     }
 
-    public function getLat(): float|string|null
-    {
-        return $this->evaluate($this->lat);
-    }
-
-    public function lng(\Closure|float $lng): static
+    private function lng(float $lng): static
     {
         $this->lng = $lng;
 
         return $this;
     }
 
-    public function getLng(): float|string|null
-    {
-        return $this->evaluate($this->lng);
-    }
-
-    public function zoom(\Closure|int $zoom): static
+    public function zoom(int $zoom): static
     {
         $this->zoom = $zoom;
 
@@ -100,19 +100,61 @@ class FilamentGmp extends Field
         return $this->evaluate($this->searchable);
     }
 
-    public function getApiKey(): ?string
+    public function getApiKey(): string
     {
-        return config('filament-gmp.api_key');
+        return $this->config()['api_key'];
+    }
+
+    public function getMapId(): string
+    {
+        return $this->config()['map_id'];
     }
 
     public function getOptions(): array
     {
         return [
-                'apiKey' => $this->getApiKey(),
-                'lat' => $this->getLat(),
-                'lng' => $this->getLng(),
-                'zoom' => $this->getZoom(),
-                'height' => $this->getHeight(),
-            ] + $this->options;
+            'map_id' => $this->getMapId(),
+            'center' => $this->getCenter(),
+            'zoom' => $this->getZoom(),
+            'height' => $this->getHeight(),
+            'searchable' => $this->getSearchable(),
+            'draggable' => $this->getDraggable(),
+            'precision' => $this->getDefaultsFromConfig()['precision'],
+            'geocode' => $this->getDefaultsFromConfig()['geocode'],
+            'place_fields' => $this->config()['place_fields'],
+            'place_autocomplete' => $this->config()['place_autocomplete'],
+        ];
+    }
+
+    private function getDefaultsFromConfig(): array
+    {
+        return $this->config()['defaults'];
+    }
+
+    private function setDefaultsFromConfig(): void
+    {
+        $defaults = $this->getDefaultsFromConfig();
+
+        $this->height($defaults['height'])
+            ->zoom($defaults['zoom'])
+            ->searchable($defaults['searchable'])
+            ->draggable($defaults['draggable'])
+            ->center(...$defaults['center']);
+    }
+
+    private function config(): array
+    {
+        return $this->config ??= config('filament-gmp');
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->setDefaultsFromConfig();
+
+         // $this->afterStateHydrated(static function (FilamentGmp $component, $record) {});
+
+        // $this->dehydrateStateUsing(static fn ($state) => $state);
     }
 }
