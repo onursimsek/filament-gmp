@@ -23,7 +23,7 @@ const defaultOptions = {
     sourcemap: isDev ? 'inline' : false,
     sourcesContent: isDev,
     treeShaking: true,
-    target: ['es2020'],
+    target: ['es2022'],
     minify: !isDev,
     plugins: [{
         name: 'watchPlugin',
